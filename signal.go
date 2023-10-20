@@ -14,7 +14,6 @@ func WithSignalCancelation(parent context.Context, signals ...os.Signal) (ctx co
 		signalCh = make(chan os.Signal, 1)
 		done     = make(chan struct{})
 		stop     = make(chan struct{})
-		once     = sync.Once{}
 	)
 
 	signal.Notify(signalCh, signals...)
@@ -35,6 +34,8 @@ func WithSignalCancelation(parent context.Context, signals ...os.Signal) (ctx co
 
 		cancelCause(nil)
 	}()
+
+	var once sync.Once
 
 	cancel = func() {
 		once.Do(func() { close(stop) })
