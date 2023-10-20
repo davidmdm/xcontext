@@ -20,26 +20,23 @@ Here is a simple example of how to use the `xcontext` package to gracefully hand
 package main
 
 import (
-    "context"
-    "fmt"
-    "os"
-    "os/signal"
-    "syscall"
+	"context"
+	"syscall"
 
-    "github.com/davidmdm/xcontext"
+	"github.com/davidmdm/xcontext"
 )
 
 func main() {
-    // Create a context that cancels on SIGINT and SIGTERM signals
-    ctx, cancel := xcontext.WithSignalCancelation(context.Background(), sycall.SIGINT, syscall.SIGTERM)
-    defer canel()
+	// Create a context that cancels on SIGINT and SIGTERM signals
+	ctx, cancel := xcontext.WithSignalCancelation(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
 
-    // Will be done once context is canceled by a SIGINT
-    <-ctx.Done()
+	// Will be done once context is canceled by a SIGINT
+	<-ctx.Done()
 
-    context.Err()            // context.Canceled
-    context.Cause(ctx)       // xcontext.SignalContextError -> context canceled: signal received: interrupt
-    xcontext.SignalCause(ctx) // syscall.SIGINT (the received signal value)
+	ctx.Err()                 // context.Canceled
+	context.Cause(ctx)        // xcontext.SignalContextError -> context canceled: signal received: interrupt
+	xcontext.SignalCause(ctx) // syscall.SIGINT (the received signal value)
 }
 ```
 
