@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 )
 
 func WithSignalCancelation(parent context.Context, signals ...os.Signal) (ctx context.Context, cancel context.CancelFunc) {
@@ -13,6 +14,7 @@ func WithSignalCancelation(parent context.Context, signals ...os.Signal) (ctx co
 		signalCh = make(chan os.Signal, 1)
 		done     = make(chan struct{})
 		stop     = make(chan struct{})
+		once     = sync.Once{}
 	)
 
 	signal.Notify(signalCh, signals...)
@@ -35,7 +37,7 @@ func WithSignalCancelation(parent context.Context, signals ...os.Signal) (ctx co
 	}()
 
 	cancel = func() {
-		close(stop)
+		once.Do(func() { close(stop) })
 		<-done
 	}
 
