@@ -39,7 +39,7 @@ func main() {
 
     context.Err()            // context.Canceled
     context.Cause(ctx)       // xcontext.SignalContextError -> context canceled: signal received: interrupt
-    context.SignalCause(ctx) // syscall.SIGINT (the received signal value)
+    xcontext.SignalCause(ctx) // syscall.SIGINT (the received signal value)
 }
 ```
 
