@@ -20,18 +20,27 @@ import (
 func TestWithCancelation(t *testing.T) {
 	file, err := os.CreateTemp("", "acceptance-binary-*")
 	require.NoError(t, err)
+	require.NoError(t, file.Close())
 
 	isCoverage := slices.ContainsFunc(os.Args, func(arg string) bool { return strings.HasPrefix(arg, "-test.gocoverdir=") })
 
 	build := func() *exec.Cmd {
-		if isCoverage {
-			return CommandStandardIO("go", "build", "-coverpkg=./...", "-o", file.Name(), "./acceptance")
+		args := []string{
+			"build",
+			"-race",
+			"-o", file.Name(),
 		}
-		return CommandStandardIO("go", "build", "-o", file.Name(), "./acceptance")
+
+		if isCoverage {
+			args = append(args, "-coverpkg=./...")
+		}
+
+		args = append(args, "./acceptance")
+
+		return CommandStandardIO("go", args...)
 	}()
 
 	require.NoError(t, build.Run())
-	require.NoError(t, file.Close())
 
 	acceptanceCMD := func() (cmd *exec.Cmd, stdout *bytes.Buffer) {
 		cmd = exec.Command(file.Name())
