@@ -21,10 +21,22 @@ func TestWithCancelation(t *testing.T) {
 	file, err := os.CreateTemp("", "acceptance-binary-*")
 	require.NoError(t, err)
 
-	isCoverage := slices.ContainsFunc(os.Args, func(arg string) bool { return strings.HasPrefix(arg, "-test.gocoverdir=") })
+	coverDir := func() string {
+		args := append([]string{}, os.Args...)
+		slices.Reverse(args)
+		for _, arg := range args {
+			dir, ok := strings.CutPrefix(arg, "-test.gocoverdir=")
+			if ok {
+				return dir
+			}
+		}
+		return ""
+	}()
+
+	t.Log("COVERDIR", coverDir)
 
 	build := func() *exec.Cmd {
-		if isCoverage {
+		if coverDir != "" {
 			return CommandStandardIO("go", "build", "-coverpkg=./...", "-o", file.Name(), "./acceptance")
 		}
 		return CommandStandardIO("go", "build", "-o", file.Name(), "./acceptance")
@@ -35,7 +47,9 @@ func TestWithCancelation(t *testing.T) {
 
 	acceptanceCMD := func() (cmd *exec.Cmd, stdout *bytes.Buffer) {
 		cmd = exec.Command(file.Name())
-		cmd.Env = append(cmd.Env, os.Environ()...)
+		if coverDir != "" {
+			cmd.Env = append(cmd.Env, "GOCOVERDIR="+coverDir)
+		}
 
 		stdout = new(bytes.Buffer)
 		cmd.Stdout = stdout

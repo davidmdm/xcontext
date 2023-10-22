@@ -1,0 +1,3 @@
+rm -rf ./coverage && mkdir ./coverage
+go test -count 1 -cover -test.gocoverdir=./coverage ./...
+go tool covdata percent -i ./coverage
