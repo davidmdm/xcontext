@@ -1,0 +1,23 @@
+version: "3"
+
+tasks:
+  coverage:
+    cmds:
+      - rm -rf ./coverage && mkdir ./coverage
+      - go test -v -p 1 -count 1 -race -test.gocoverdir=./coverage -cover  ./...
+      - go tool covdata percent -i=./coverage
+      - go tool covdata textfmt -i ./coverage -o ./coverage/results.out
+      - '{{if eq .CLI_ARGS "html"}} go tool cover -html ./coverage/results.out{{end}}'
+
+  lint:
+    cmds:
+      - golangci-lint run ./...
+
+
+  # Ironically the task runner is itself a dev dependency of the project.
+  # To install it run the following command:
+  #
+  # go install github.com/go-task/task/v3/cmd/task@latest
+  install-dev-deps:
+    cmds:
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2

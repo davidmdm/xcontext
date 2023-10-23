@@ -22,7 +22,16 @@ func TestWithCancelation(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, file.Close())
 
-	isCoverage := slices.ContainsFunc(os.Args, func(arg string) bool { return strings.HasPrefix(arg, "-test.gocoverdir=") })
+	coverDir := func() string {
+		args := append([]string{}, os.Args...)
+		slices.Reverse(args)
+		for _, arg := range args {
+			if dir, ok := strings.CutPrefix(arg, "-test.gocoverdir="); ok {
+				return dir
+			}
+		}
+		return ""
+	}()
 
 	build := func() *exec.Cmd {
 		args := []string{
@@ -31,8 +40,8 @@ func TestWithCancelation(t *testing.T) {
 			"-o", file.Name(),
 		}
 
-		if isCoverage {
-			args = append(args, "-coverpkg=./...")
+		if coverDir != "" {
+			args = append(args, "-cover", "-coverpkg=./...")
 		}
 
 		args = append(args, "./acceptance")
@@ -44,7 +53,8 @@ func TestWithCancelation(t *testing.T) {
 
 	acceptanceCMD := func() (cmd *exec.Cmd, stdout *bytes.Buffer) {
 		cmd = exec.Command(file.Name())
-		cmd.Env = append(cmd.Env, os.Environ()...)
+		// cmd.Env = append(cmd.Env, os.Environ()...)
+		cmd.Env = append(cmd.Env, "GOCOVERDIR="+coverDir)
 
 		stdout = new(bytes.Buffer)
 		cmd.Stdout = stdout
@@ -121,6 +131,11 @@ func TestSignalCause(t *testing.T) {
 			require.Equal(t, tc.Signal, xcontext.SignalCause(ctx))
 		})
 	}
+}
+
+func TestSignalErrorIsCanceled(t *testing.T) {
+	var e error = xcontext.SignalCancelError{Signal: syscall.SIGTERM}
+	require.True(t, errors.Is(e, context.Canceled))
 }
 
 func CommandStandardIO(name string, args ...string) *exec.Cmd {

@@ -53,6 +53,10 @@ func (err SignalCancelError) Error() string {
 	return fmt.Sprintf("%v: received signal: %s", context.Canceled, err.Signal)
 }
 
+func (SignalCancelError) Unwrap() error {
+	return context.Canceled
+}
+
 func SignalCause(ctx context.Context) os.Signal {
 	if sigErr := (SignalCancelError{}); errors.As(context.Cause(ctx), &sigErr) {
 		return sigErr.Signal
