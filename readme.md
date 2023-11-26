@@ -1,3 +1,7 @@
+# Moved Away
+
+This repository has been moved to github.com/davidmdm/x/xcontext
+
 # xcontext
 
 The `xcontext` package is a Go library that enhances the capabilities of the standard `context` package by adding signal-based context cancellation. This functionality allows you to cancel a context when specific signals are received, such as interrupt signals (e.g., SIGINT) or termination signals (e.g., SIGTERM). The package is particularly useful in applications where graceful shutdown or cleanup is required in response to system signals.
