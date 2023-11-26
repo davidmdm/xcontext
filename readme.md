@@ -1,6 +1,6 @@
 # Moved Away
 
-This repository has been moved to github.com/davidmdm/x/xcontext
+This repository has been moved to https://github.com/davidmdm/x/xcontext
 
 # xcontext
 
